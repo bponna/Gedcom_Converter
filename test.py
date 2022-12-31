@@ -39,6 +39,39 @@ class TestStringMethods(unittest.TestCase):
         result = US02(Date("16 MAR 1901"), Date("17 FEB 2002"))
         self.assertEqual(result, True)
 
+
+    def test_US03_1(self):
+        result = US03(Date("16 JUN 2022"), Date("17 AUG 2022"))
+        self.assertEqual(result, False)
+    def test_US03_2(self):
+        result = US03(Date("16 SEP 2022"), Date("15 JUN 2022"))
+        self.assertEqual(result, True)
+    def test_US03_3(self):
+        result = US03(Date("16 OCT 1968"), Date("17 MAY 2022"))
+        self.assertEqual(result, False)
+    def test_US03_4(self):
+        result = US03(Date("16 NOV 2022"), Date("1 JAN 1973"))
+        self.assertEqual(result, True)
+    def test_US03_5(self):
+        result = US03(Date("16 MAR 1901"), Date("17 FEB 2002"))
+        self.assertEqual(result, False)
+
+    def test_US04_1(self):
+        result = US04(Date("16 JUN 2022"), Date("17 AUG 2022"))
+        self.assertEqual(result, False)
+    def test_US04_2(self):
+        result = US04(Date("16 SEP 2022"), Date("15 JUN 2022"))
+        self.assertEqual(result, True)
+    def test_US04_3(self):
+        result = US04(Date("16 OCT 1968"), Date("17 MAY 2022"))
+        self.assertEqual(result, False)
+    def test_US04_4(self):
+        result = US04(Date("16 NOV 2022"), Date("1 JAN 1973"))
+        self.assertEqual(result, True)
+    def test_US04_5(self):
+        result = US04(Date("16 MAR 1901"), Date("17 FEB 2002"))
+        self.assertEqual(result, False)
+
     #Tests for user story 5
     def test_US05_1(self):
         result = US05(Date("16 JUL 2022"), Date("17 AUG 2022"))
@@ -156,6 +189,41 @@ class TestStringMethods(unittest.TestCase):
         result = US21(Husband_ID[3], Wife_ID[3], 3)
         self.assertEqual(result, None)
 
+    
+    #Tests for user story 31 
+    def test_US31_1(self):
+        result = US31(33)
+        self.assertEqual(result, True)
+    def test_US31_2(self):
+        result = US31(30)
+        self.assertEqual(result, False)
+    def test_US31_3(self):
+        result = US31(29)
+        self.assertEqual(result, False)
+    def test_US31_4(self):
+        result = US31(34)
+        self.assertEqual(result, True)
+    def test_US31_5(self):
+        result = US31(18)
+        self.assertEqual(result, False)
+
+    #Tests for user story 32 
+    def test_US32_1(self):
+        result = US32('@I3@ @I4@ @I17@ @I18@ @I19@ @I20@ @I21@ @I22@ @I23@ @I24@ @I25@ @I26@ @I27@ @I28@ @I29@ @I30@')
+        self.assertEqual(result, "US32: ['Brent Shtrahman', 'Slab Shtrahman', 'Trent Shtrahman'] are siblings born on the same day (multiple births).")
+    def test_US32_2(self):
+        result = US32('@I1@ @I12@ @I36@ ')
+        self.assertEqual(result, None)
+    def test_US32_3(self):
+        result = US32('@I2@ @I31@')
+        self.assertEqual(result, None)
+    def test_US32_4(self):
+        result = US32('N/A')
+        self.assertEqual(result, None)
+    def test_US32_5(self):
+        result = US32('@I13@')
+        self.assertEqual(result, None)
+
     def test_US29_1(self):
         result = US29(0)
         self.assertEqual(result, False)
@@ -221,6 +289,60 @@ class TestStringMethods(unittest.TestCase):
     def test_US34_5(self):
         result = US34(Husband_ID[2], Wife_ID[2], Date(Married[2]), 2)
         self.assertEqual(result, None)
+
+    def test_US35_1(self):
+        result = US35(Date("16 JUL 2022"))
+        self.assertEqual(result, False)
+
+    def test_US35_2(self):
+        result = US35(Date("16 NOV 2022"))
+        self.assertEqual(result, False)
+
+    def test_US36_1(self):
+        result = US36(Date("16 JUL 2022"))
+        self.assertEqual(result, False)
+
+    def test_US36_2(self):
+        result = US36(Date("16 JUL 2022"))
+        self.assertEqual(result, False)
+
+    def test_US39_1(self):
+        result = US39(Date("16 NOV 2022"))
+        self.assertEqual(result, False)
+
+    #Tests for user story 39
+    def test_US39_1(self):
+        result = US39(Date("16 JUL 2022"))
+        self.assertEqual(result, False)
+    def test_US39_2(self):
+        result = US39(Date("23 DEC 2006"))
+        self.assertEqual(result, False)
+    def test_US39_3(self):
+        result = US39(Date("28 NOV 2001"))
+        self.assertEqual(result, False)
+    def test_US39_4(self):
+        result = US39(Date("27 NOV 1999"))
+        self.assertEqual(result, False)
+    def test_US39_5(self):
+        result = US39(Date("23 JUL 2022"))
+        self.assertEqual(result, False)
+
+    #Tests for user story 42
+    def test_US42_1(self):
+        result = US42(Date("16 JUL 2022"))
+        self.assertEqual(result, True)
+    def test_US42_2(self):
+        result = US42(Date("32 JUL 2022"))
+        self.assertEqual(result, False)
+    def test_US42_3(self):
+        result = US42(Date("35 JUL 2022"))
+        self.assertEqual(result, False)
+    def test_US42_4(self):
+        result = US42(Date("16 JUL 2023"))
+        self.assertEqual(result, False)
+    def test_US42_5(self):
+        result = US42(Date("7 JUL 1995"))
+        self.assertEqual(result, True)
 
 if __name__ == '__main__':
     unittest.main()
