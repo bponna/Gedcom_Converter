@@ -1,7 +1,9 @@
 from logging import RootLogger
+from re import match
 import sys
 from pathlib import Path
 import datetime
+from datetime import date
 from prettytable import PrettyTable
 
 #Define Tables in Output.txt
@@ -155,14 +157,33 @@ def US29(i):
     return False
 
 #List living married
-
 def US30(i):
   if(Alive[i] == 'True' and Spouse[i] != 'N/A'):
     return True
   else:
     return False
 
-
+#List living individuals over 30 that are single
+def US31(i):
+  if(Age[i] > 30 and Spouse[i] == 'N/A'):
+    return True
+  return False
+#List multiple births
+def US32(children_id):
+  if(children_id == 'N/A'):
+    return None
+  matchingbirths = []
+  child_ids = children_id.split()
+  for i in range(0, len(child_ids)-1):
+    tempbirthday = Birthday[idi.index(child_ids[i])]
+    for j in range(i+1,len(child_ids)-1):
+      if(tempbirthday == Birthday[idi.index(child_ids[j])]):
+        matchingbirths.append(Name[idi.index(child_ids[i])])
+        matchingbirths.append(Name[idi.index(child_ids[j])])
+  matchingbirths = [*set(matchingbirths)]
+  if(matchingbirths != []):
+    return 'US32: ' + str(sorted(matchingbirths)) + ' are siblings born on the same day (multiple births).'
+  return None
 
 #List orphans
 def US33(i):
@@ -189,6 +210,40 @@ def US34(husband_id, wife_id,marriage_date, i):
     return "Error US34 "+ Wife_Name[i] + "(" + str(Wmarr_age) + ") was more than double the age of " + Husband_Name[i] + "(" +\
       str(Hmarr_age) + ") at the time of marriage."
   return None
+
+def US35(birthdate):
+  testDate = date(2020, birthdate.month, birthdate.day)
+  today = date(2020, date.today().month, date.today().day)
+  delta = testDate - today
+
+  return (0>delta.days>=30)
+
+#List recent deaths
+def US36(deathdate):
+  testDate = date(2020, deathdate.month, deathdate.day)
+  today = date(2020, date.today().month, date.today().day)
+  delta = testDate - today
+
+  return (0>delta.days>=30)
+
+#List Anniversaries that will occur in the next 30 days
+def US39(tdate):
+  testDate = date(2020, tdate.month, tdate.day)
+  today = date(2020, date.today().month, date.today().day)
+  delta = testDate - today
+  return (0<=delta.days<31)
+#List Illegitimate dates including dates that are past the current date
+def US42(tdate):
+  try:
+    testDate = datetime.date(tdate.year,tdate.month,tdate.day)
+    if(testDate<=date.today()):
+      return True
+    else:
+      return False
+  except ValueError:
+    return False
+
+
 
 #lists of individual data
 idi = []
@@ -363,10 +418,18 @@ def main():
     OlderThan150 = []
     TooManySiblings = []
     MalesName = []
+    ThirtyAndSingle = []
+    MultipleBirth = []
+    Orphan = []
+    AgeGap = []
     Orphan = []
     AgeGap = []
     Deceased = []
     AliveAndMarried = []
+    UpcomingAnniversaries = []
+    IllegitimateDates = []
+    recentBirths = []
+    recentDeaths = []
     today = datetime.datetime.now()
 
     for i in range(len(idi)):
@@ -379,9 +442,18 @@ def main():
             deathdate = Date(Death[i])
             if (US01(deathdate)):
                 DateAfterToday.append('Error US01 Death Date ' + Death[i] + ' happens after today')
+            if (US36(deathdate)):
+                recentDeaths.append('US36: ' + Name[i] + ' died recently')
 
         if(US07(Age[i])):
           OlderThan150.append('Error US07 Age of ' + Name[i] + ' is greater than 150')
+        
+        if (US31(i)):
+          ThirtyAndSingle.append('Error US31: ' + Name[i] + '(' + idi[i] + ') is a living person over 30 who has never been married.')
+
+        if(US33(i)):
+          Orphan.append('US33: ' + Name[i] + '(' + idi[i] + ') is an orphaned child.')
+          
         if(US33(i)):
           Orphan.append('US33: ' + Name[i] + '(' + idi[i] + ') is an orphaned child.')
 
@@ -391,6 +463,15 @@ def main():
         if(US30(i)):
           AliveAndMarried.append('US30: ' + Name[i] + ' is alive and married.')
 
+        if(US35(birthdate)):
+          recentBirths.append('US35: ' + Name[i] + ' was born recently.')
+
+        if(Birthday[i]!='N/A'):
+          if(not US42(Date(Birthday[i]))):
+            IllegitimateDates.append("Error US42: Birthdate " + Birthday[i] + " for individual " +idi[i] + " is illegitimate.")
+        if(Death[i]!='N/A'):
+          if(not US42(Date(Death[i]))):
+            IllegitimateDates.append("Error US42: Death date " + Death[i] + " for individual " +idi[i] + " is illegitimate.")
 
     for i in range(len(idf)):
         #date of marriage converted to usable format
@@ -475,49 +556,84 @@ def main():
         gendererror = US21(Husband_ID[i], Wife_ID[i], i)
         if(gendererror!=None):
           WrongGender.append(gendererror)
+
+        #Check for multiple births
+        multiplebirths = US32(Children[i])
+        if(multiplebirths!=None):
+          MultipleBirth.append(multiplebirths)
+
         #Check marriage age difference
         double_age = US34(Husband_ID[i], Wife_ID[i], marrydate, i)
         if(double_age!=None):
           AgeGap.append(double_age)
         
-        #Write tables to Output.txt
-        file1 = open("Output.txt", "w")
-        file1.write("Individuals\n")
-        file1.write("{}\n".format(Individuals))
-        file1.write("Families\n")
-        file1.write("{}".format(Families))
-        #US01
-        file1.write("\n{}".format(DateAfterToday))
-        #US02
-        file1.write("\n{}".format(MarrbeforeBirth))
-        #US03
-        file1.write("\n{}".format(lst_US03))
-        #US04
-        file1.write("\n{}".format(MarriageAfterDivorce))
-        #US05
-        file1.write("\n{}".format(MarryAfterDeath))
-        #US06
-        file1.write("\n{}".format(DivorcedAfterDeath))
-        #US07
-        file1.write("\n{}".format(OlderThan150))
-        #US15
-        file1.write("\n{}".format(TooManySiblings))
-        #US16
-        file1.write("\n{}".format(MalesName))
-        #US17
-        file1.write("\n{}".format(MarriedDescendant))
-        #US18
-        file1.write("\n{}".format(Siblings))
-        #US21
-        file1.write("\n{}".format(WrongGender))
-        #US29
-        file1.write("\n{}".format(Deceased))
-        #US30
-        file1.write("\n{}".format(AliveAndMarried))
-        #US33
-        file1.write("\n{}".format(Orphan))
-        #US34
-        file1.write("\n{}".format(AgeGap))
+        #Check for upcoming anniversaries
+        if(Married[i]!='N/A'):
+          if(US39(Date(Married[i]))):
+            UpcomingAnniversaries.append("Warning! US39: Upcoming anniversary for " +idf[i])
+        #Check for illegitimate dates
+        if(Married[i]!='N/A'):
+          if(not US42(Date(Married[i]))):
+            IllegitimateDates.append("Error US42: Marriage date " + Married[i] + " for family " +idf[i] + " is illegitimate.")
+        if(Divorced[i]!='N/A'):
+          if(not US42(Date(Divorced[i]))):
+            IllegitimateDates.append("Error US42: Divorce date " + Divorced[i] + " for family " +idf[i] + " is illegitimate.")
+    #Write tables to Output.txt
+    file1 = open("Output.txt", "w")
+    file1.write("Individuals\n")
+    file1.write("{}\n".format(Individuals))
+    file1.write("Families\n")
+    file1.write("{}".format(Families))
+    #US01
+    file1.write("\n{}".format(DateAfterToday))
+    #US02
+    file1.write("\n{}".format(MarrbeforeBirth))
+    #US03
+    file1.write("\n{}".format(lst_US03))
+    #US04
+    file1.write("\n{}".format(MarriageAfterDivorce))
+    #US05
+    file1.write("\n{}".format(MarryAfterDeath))
+    #US06
+    file1.write("\n{}".format(DivorcedAfterDeath))
+    #US07
+    file1.write("\n{}".format(OlderThan150))
+    #US15
+    file1.write("\n{}".format(TooManySiblings))
+    #US16
+    file1.write("\n{}".format(MalesName))
+    #US17
+    file1.write("\n{}".format(MarriedDescendant))
+    #US18
+    file1.write("\n{}".format(Siblings))
+    #US21
+    file1.write("\n{}".format(WrongGender))
+
+    #US31
+    file1.write("\n{}".format(ThirtyAndSingle))
+    #US32
+    file1.write("\n{}".format(MultipleBirth))
+
+    #US29
+    file1.write("\n{}".format(Deceased))
+    #US30
+    file1.write("\n{}".format(AliveAndMarried))
+    
+    #US33
+    file1.write("\n{}".format(Orphan))
+    #US34
+    file1.write("\n{}".format(AgeGap))
+
+    #US35
+    file1.write("\n{}".format(recentBirths))
+
+    #US36
+    file1.write("\n{}".format(recentDeaths))
+
+    #US39
+    file1.write("\n{}".format(UpcomingAnniversaries))
+    #US42
+    file1.write("\n{}".format(IllegitimateDates))
 
 if __name__=="__main__":
     main()
